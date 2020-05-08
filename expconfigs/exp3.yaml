@@ -1,0 +1,10 @@
+EXP: "exp3"
+
+DATA:
+  IMG_SIZE: 512
+TRAIN: 
+  MODEL: 'swsl_resnext50_32x4d'
+  EPOCHS: 15
+  BATCH_SIZE: 32
+  AUG: False
+  LOSS: "bce"

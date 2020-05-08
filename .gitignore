@@ -1,0 +1,15 @@
+*__pycache__*
+*.ipynb_checkpoints*
+outputs*
+runs*
+weights*
+.git/*
+cache/*
+logs/*
+*.md
+*.txt
+*.ipynb
+push_code_.sh
+*submission
+*alaska2-image-steganalysis
+*papers

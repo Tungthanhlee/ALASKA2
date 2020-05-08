@@ -1,0 +1,12 @@
+EXP: "exp4"
+
+DATA:
+  IMG_SIZE: 512
+
+# OPT:
+  # BASE_LR: 1e-4
+TRAIN: 
+  MODEL: 'srnet'
+  EPOCHS: 10
+  BATCH_SIZE: 16
+  LOSS: "bce"

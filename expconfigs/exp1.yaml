@@ -1,0 +1,10 @@
+EXP: "exp1_bce"
+
+SYSTEM:
+  FP16: False
+TRAIN: 
+  MODEL: 'resnet101'
+  EPOCHS: 10
+  BATCH_SIZE: 24
+  AUG: False
+  # LOSS: "bce"

@@ -1,0 +1,8 @@
+EXP: "exp2"
+
+TRAIN: 
+  MODEL: 'resnet101'
+  EPOCHS: 5
+  BATCH_SIZE: 24
+  RANDAUG_N: 2
+  RANDAUG_M: 13

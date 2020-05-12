@@ -1,11 +1,13 @@
 # code in this file is adpated from rpmcruz/autoaugment
 # https://github.com/rpmcruz/autoaugment/blob/master/transformations.py
 import random
-
+from random import seed
 import PIL, PIL.ImageOps, PIL.ImageEnhance, PIL.ImageDraw
 import numpy as np
 import torch
 from PIL import Image
+
+seed(6969)
 
 
 def ShearX(img, v):  # [-0.3, 0.3]
@@ -163,16 +165,17 @@ def augment_list():  # 16 oeprations and their ranges
     # https://github.com/tensorflow/tpu/blob/8462d083dd89489a79e3200bcc8d4063bf362186/models/official/efficientnet/autoaugment.py#L505
     l = [
         # (AutoContrast, 0, 1),
-        (Equalize, 0, 1),
-        (Invert, 0, 1),
+        # (Equalize, 0, 1),
+        (Flip, 0, 1),
+        # (Invert, 0, 1),
         (Rotate, 0, 30),
         # (Posterize, 0, 4),
         # (Solarize, 0, 256),
         # (SolarizeAdd, 0, 110),
         # (Color, 0.1, 1.9),
-        (Contrast, 0.1, 1.9),
-        (Brightness, 0.1, 1.9),
-        (Sharpness, 0.1, 1.9),
+        # (Contrast, 0.1, 1.9),
+        # (Brightness, 0.1, 1.9),
+        # (Sharpness, 0.1, 1.9),
         # (ShearX, 0., 0.3),
         # (ShearY, 0., 0.3),
         # (CutoutAbs, 0, 40),
@@ -232,7 +235,7 @@ class CutoutDefault(object):
 class RandAugment:
     def __init__(self, n, m):
         self.n = n
-        self.m = m      # [0, 30]
+        self.m = m    # [0, 30]
         self.augment_list = augment_list()
 
     def __call__(self, img):

@@ -1,12 +1,12 @@
-EXP: "exp4"
+EXP: "exp4_3channel"
 
 DATA:
   IMG_SIZE: 512
 
 # OPT:
-  # BASE_LR: 1e-4
+#   BASE_LR: 1e-4
 TRAIN: 
   MODEL: 'srnet'
-  EPOCHS: 10
-  BATCH_SIZE: 16
+  EPOCHS: 15
+  BATCH_SIZE: 64
   LOSS: "bce"

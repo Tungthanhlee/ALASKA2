@@ -21,7 +21,7 @@ for n,o in zip(names, output):
     data_with_extension.append([n]+[o])
 # print(data_with_extension)
 df = pd.DataFrame(data=data_with_extension, columns=["Id", "Label"])
-# df_ext = pd.DataFrame(data=data_with_extension, columns=["ID", "leaf_rust", "stem_rust", "healthy_wheat"])
+# df_ext = pd.DataFrame(data=data_with_extension, columns=["Id", "Label"])
 
 df.to_csv("submission/submission.csv", index=False)
 # df_ext.to_csv("submission/submission_ext.csv", index=False)

@@ -1,0 +1,18 @@
+#exactly like exp4 but not train with kfold and return 4 classes instead of 2 classes
+EXP: "exp5"
+
+# SYSTEM:
+#   NUM_WORKERS: 16
+
+DATA:
+  IMG_SIZE: 512
+  KFOLD: False
+
+# OPT:
+#   BASE_LR: 1e-4
+TRAIN: 
+  MODEL: 'srnet'
+  EPOCHS: 10
+  BATCH_SIZE: 64
+  LOSS: "crossentropy"
+  NUM_CLASSES: 4

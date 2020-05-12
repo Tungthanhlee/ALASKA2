@@ -5,6 +5,9 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader, Subset
 import cv2
+import random
+from random import seed
+from random import randint
 cv2.setNumThreads(0)
 # cv2.oc1.setUseOpenCL(False)
 import torch.nn.functional as F
@@ -41,7 +44,8 @@ class ALASKA(Dataset):
                                               std=(0.2321024260764962, 0.22770540015765814, 0.2665100547329813))
         
         if self.mode == "train":
-            self.transform = RandAugment(n=cfg.TRAIN.RANDAUG_N, m=cfg.TRAIN.RANDAUG_M)
+            # self.transform = RandAugment(n=cfg.TRAIN.RANDAUG_N, m=cfg.TRAIN.RANDAUG_M)
+            self.transform = RandAugment(n=cfg.TRAIN.RANDAUG_N, m=randint(0,30))
             
     def __len__(self):
         return len(self.df)
@@ -77,8 +81,8 @@ class ALASKA(Dataset):
         image = image.permute(2,0,1)
         image = image.div_(255.)
         image = self.normalize(image)
-        if "srnet" in self.cfg.TRAIN.MODEL:
-            image = torch.mean(image, axis=0, keepdim=True) 
+        # if "srnet" in self.cfg.TRAIN.MODEL:
+        #     image = torch.mean(image, axis=0, keepdim=True) 
         if self.mode == "test":
             _id = info["Id"]
             return image, _id
@@ -86,17 +90,27 @@ class ALASKA(Dataset):
             #get class
             label = info['label']
             onehot = convert_onehot(label)
-            # label = torch.tensor(label, dtype=torch.long)
+            label = torch.tensor(label, dtype=torch.long)
             # return image, label, onehot
-            return image, onehot
+            return image, onehot, label
+
+# def convert_onehot(label):
+#     return torch.tensor([0,1], dtype=torch.float) if label == 1 else torch.tensor([1,0], dtype=torch.float)
 
 def convert_onehot(label):
-    return torch.tensor([0,1], dtype=torch.float) if label == 1 else torch.tensor([1,0], dtype=torch.float)
+    if label == 0: 
+        return torch.tensor([1,0,0,0], dtype=torch.float)
+    if label == 1: 
+        return torch.tensor([0,1,0,0], dtype=torch.float)
+    if label == 2: 
+        return torch.tensor([0,0,1,0], dtype=torch.float)
+    if label == 3: 
+        return torch.tensor([0,0,0,1], dtype=torch.float)
 def get_dataset(cfg, mode):
     
     if mode == 'train':
-        if cfg.DATA.PSEUDO == True:
-            csv = os.path.join(cfg.DIRS.CSV ,f"pseudo.csv")
+        if not cfg.DATA.KFOLD:
+            csv = os.path.join(cfg.DIRS.CSV ,f"train.csv")
         else:
             csv = os.path.join(cfg.DIRS.CSV ,f"train_fold{cfg.DATA.FOLD}.csv")
         dts = ALASKA(cfg, csv, mode)
@@ -109,7 +123,8 @@ def get_dataset(cfg, mode):
             csv = os.path.join(cfg.DIRS.CSV,"test.csv")
         else:
             csv = os.path.join(cfg.DIRS.CSV,f"valid_fold{cfg.DATA.FOLD}.csv")
-            # csv = os.path.join(cfg.DATA.CSV,f"valid.csv")
+            if not cfg.DATA.KFOLD:
+                csv = os.path.join(cfg.DIRS.CSV,f"valid.csv")
         dts = ALASKA(cfg,csv, mode)
         batch_size = cfg.VAL.BATCH_SIZE
         dataloader = DataLoader(dts, batch_size=batch_size, 

@@ -102,10 +102,7 @@ def main(args, cfg):
     if "bce" in cfg.TRAIN.LOSS: 
         train_criterion = nn.BCEWithLogitsLoss()
         valid_criterion = nn.BCEWithLogitsLoss()
-    elif "mse" in cfg.TRAIN.LOSS:
-        train_criterion = nn.MSELoss()
-        valid_criterion = nn.MSELoss()
-    else:
+    elif 'crossentropy' in cfg.TRAIN.LOSS:
         train_criterion = nn.CrossEntropyLoss()
         valid_criterion = nn.CrossEntropyLoss()
 
@@ -145,7 +142,16 @@ def main(args, cfg):
             ckpt = torch.load(args.load, "cpu")
             try:
                 print("Loaded SRnet pretrained.")
-                model.load_state_dict(ckpt['model_state_dict'])
+                # model.load_state_dict(ckpt['model_state_dict'])
+                state_dict = ckpt['model_state_dict']
+                #pop 1st layer to train different channel
+                if cfg.DATA.INP_CHANNEL != 1:
+                    state_dict.pop("layer1.weight")
+
+                #pop fc out of weight to train multiple classes
+                state_dict.pop('fc.weight')
+                state_dict.pop('fc.bias')
+                model.load_state_dict(state_dict, strict=False)
             except:
                 model.load_state_dict(ckpt.pop('state_dict'))
                 if not args.finetune:

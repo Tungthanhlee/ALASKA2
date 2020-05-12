@@ -86,6 +86,16 @@ def accuracy(target, output):
     output[np.arange(output.shape[0]), idx] = 1
     
     return accuracy_score(target, output)
+
+def get_cumsum(tensor, splitsize=[1,3]):
+    """
+    sum over 3 last elements of a tensor
+    input: torch.tensor([0.1,0.5,0.1,0.3]) 
+    ouput: torch.tensor([0.1,0.9]) # sum over 0.5+0.1+0.3=0.9
+    """
+    split1, split2 = torch.split(tensor, split_size_or_sections=splitsize, dim=1)
+    split2 = torch.sum(split2, dim=1, keepdim=True)
+    return torch.cat([split1, split2], dim=1)
     
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -104,3 +114,7 @@ class AverageMeter(object):
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
+
+if __name__ == "__main__":
+    a = torch.tensor([[0,1,0,1],[0,1,2,3]])
+    print(get_cumsum(a))

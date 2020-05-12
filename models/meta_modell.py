@@ -26,10 +26,10 @@ def convert_relu_to_mish(model):
 			convert_relu_to_mish(child)
 
 class Srnet(nn.Module):
-	def __init__(self):
+	def __init__(self, cfg):
 		super(Srnet, self).__init__()
 		# Layer 1
-		self.layer1 = nn.Conv2d(in_channels=1, out_channels=64,
+		self.layer1 = nn.Conv2d(in_channels=cfg.DATA.INP_CHANNEL, out_channels=64,
 			kernel_size=3, stride=1, padding=1, bias=False)
 		self.bn1 = nn.BatchNorm2d(64)
 		# Layer 2
@@ -125,7 +125,7 @@ class Srnet(nn.Module):
 		self.bn122 = nn.BatchNorm2d(512)
 		# avgp = torch.mean() in forward before fc
 		# Fully Connected layer
-		self.fc = nn.Linear(512*1*1, 2)
+		self.fc = nn.Linear(512*1*1, cfg.TRAIN.NUM_CLASSES)
 
 	def forward(self, inputs):
 		# Layer 1
@@ -387,8 +387,8 @@ class DenseNet(nn.Module):
 if __name__ == "__main__":
 	
 	cfg = get_cfg_defaults()
-	model = Srnet()
+	model = Srnet(cfg)
 	print(model)
-	inpu = torch.rand((5,1,244,244))
+	inpu = torch.rand((5,3,244,244))
 	out = model(inpu)
 	print(out.shape)

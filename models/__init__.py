@@ -12,7 +12,7 @@ import time
 from .meta_modell import ResNet, EfficientNet, DenseNet, Srnet
 from .losses import RandomLabelSmoothingLoss
 from .metrics import AverageMeter, alaska_weighted_auc, acc
-from .utils import save_checkpoint, mixup_data, cutmix_data, accuracy
+from .utils import save_checkpoint, mixup_data, cutmix_data, accuracy, get_cumsum
 from sklearn.metrics import log_loss, f1_score, accuracy_score
 from torch.autograd import Variable
 from tensorboardX import SummaryWriter
@@ -34,7 +34,7 @@ def get_model(cfg):
         elif "dense" in cfg.TRAIN.MODEL:
             model = DenseNet(cfg)
         elif "srnet" in cfg.TRAIN.MODEL:
-            model = Srnet()
+            model = Srnet(cfg)
     except:
         model = EN.from_pretrained(cfg.TRAIN.MODEL, num_classes=cfg.TRAIN.NUM_CLASSES)
     return model
@@ -91,23 +91,28 @@ def valid_model(_print, cfg, model, valid_criterion,valid_loader, tta=False):
     # AUC = AverageMeter()
     # ACC = AverageMeter()
     with torch.no_grad():
-        for i, (image, onehot) in enumerate(tbar):
+        for i, (image, onehot, target) in enumerate(tbar):
             image = image.cuda()
-            # target = target.cuda()
+            target = target.cuda()
             onehot = onehot.cuda()
         
             output = model(image).view(-1, cfg.TRAIN.NUM_CLASSES)
-            # loss = valid_criterion(output, target)
-            loss = valid_criterion(output, onehot)
+            loss = valid_criterion(output, target)
+            # loss = valid_criterion(output, onehot)
             losses.update(loss.item(), image.size(0))
 
             #calculate sigmoid/softmax
-            pred = torch.sigmoid(output)
-            # pred = torch.softmax(output, dim=1)
+            # pred = torch.sigmoid(output)
+            pred = torch.softmax(output, dim=1)
             
-            preds.append(pred)
+            #get 
+            pred_2class = get_cumsum(pred)
+            onehot_2class = get_cumsum(onehot)
+
+
+            preds.append(pred_2class)
             # targets.append(target)
-            targets.append(onehot)
+            targets.append(onehot_2class)
 
     #convert this shit to numpy
     preds, targets = torch.cat(preds, 0), torch.cat(targets, 0)
@@ -145,10 +150,10 @@ def train_loop(_print, cfg, model, train_loader,valid_loader, criterion, valid_c
         model.train()
         tbar = tqdm(train_loader)
 
-        for i, (image, onehot) in enumerate(tbar):
+        for i, (image, onehot, target) in enumerate(tbar):
             # print(target)          
             image = image.cuda()
-            # target = target.cuda()
+            target = target.cuda()
             onehot = onehot.cuda()
             # mixup/ cutmix
             if cfg.DATA.MIXUP:
@@ -157,9 +162,9 @@ def train_loop(_print, cfg, model, train_loader,valid_loader, criterion, valid_c
                 image = cutmix_data(image, alpha=cfg.DATA.CM_ALPHA)
             output = model(image)
             
-            #train sigmoid
-            # loss = criterion(output, target)
-            loss = criterion(output, onehot)
+            #train sigmoid/softmax
+            loss = criterion(output, target)
+            # loss = criterion(output, onehot)
 
             # gradient accumulation
             loss = loss / cfg.OPT.GD_STEPS
